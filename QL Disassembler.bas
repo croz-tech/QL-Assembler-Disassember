@@ -312,17 +312,17 @@
 3080 a$="CHK     "
 3090 IF PEEK (pc+1)=188 THEN
 3100 pc=pc+4
-3110 RETurn a$&"#"&hexcon$(pc-2)&hexcon$(pc-1)&", D"&i
+3110 RETurn a$&"#$"&hexcon$(pc-2)&hexcon$(pc-1)&",D"&i
 3120 END IF
 3130 pc=pc+2
 3140 j=PEEK(pc-1) MOD 64
 3150 IF PEEK(pc-1)<128 OR j DIV 8=1 THEN fault=1:RETurn ""
-3160 RETurn a$&adr$(j DIV 8,j MOD 8,pc)&", D"&i
+3160 RETurn a$&adr$(j DIV 8,j MOD 8,pc)&",D"&i
 3170 END IF
 3180 pc=pc+2
 3190 j=PEEK(pc-1) MOD 64
 3200 IF j<=15 OR (j>=24 AND j<=39) THEN fault=1: RETurn ""
-3210 RETurn "LEA"&adr$(j DIV 8,j MOD 8,pc)&", A"&i
+3210 RETurn "LEA     "&adr$(j DIV 8,j MOD 8,pc)&",A"&i
 3220 END IF
 3230 i=PEEK(pc) MOD 16
 3240 pc=pc+2
@@ -331,10 +331,10 @@
 3270 IF i<14 AND k DIV 8=1 THEN fault=1:RETurn ""
 3280 SELect ON i
 3290 =0: SELect ON j
-3300 =0:a$="NEGX.B"
-3310 =1:a$="NEGX.W"
-3320 =2:a$="NEGX.L"
-3330 =3:a$="MOVESR,"
+3300 =0:a$="NEGX.B  "
+3310 =1:a$="NEGX.W  "
+3320 =2:a$="NEGX.L  "
+3330 =3:a$="MOVE    SR,"
 3340 END SELect
 3350 IF k>=58 THEN fault=1:RETurn ""
 3360 RETurn a$&adr$(k DIV 8,k MOD 8,pc)
@@ -345,7 +345,7 @@
 3410 =3:fault=1:RETurn ""
 3420 END SELect
 3430 IF k>=58 THEN fault=1:RETurn ""
-3440 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)
+3440 RETurn a$&"   "&adr$(k DIV 8,k MOD 8,pc)
 3450 =4:SELect ON j
 3460 =3: IF k=60 THEN
 3470 IF PEEK(pc)<>0 THEN fault=1: RETurn ""
@@ -354,65 +354,66 @@
 3500 ELSE
 3510 a$=adr$(k DIV 8,k MOD 8,pc)
 3520 END IF
-3530 RETurn "MOVEAAAA"&$&", CCR"
-35400:a$="NEG. B"
-35501:a$="NEG.W"
-3560 2:a$="NEG.L"
+3530 RETurn "MOVE    "&a$&",CCR"
+3540 =0:a$="NEG. B"
+3550 =1:a$="NEG.W"
+3560 =2:a$="NEG.L"
 3570 END SELect
 3580 IF k>=58 THEN fault=1:RETurn ""
-3590 RETurn a$&"AAA"&adr$ (k DIV B,k MOD 8,pc)
-36006: SELect ON j
-36103: IF k=60 THEN
-3620 a$="#$"&hexcon$ (pc) &hexcon$(pc+1)
+3590 RETurn a$&"   "&adr$ (k DIV 8,k MOD 8,pc)
+3600 =6: SELect ON j
+3610 =3: IF k=60 THEN
+3620 a$="#$"&hexcon$(pc)&hexcon$(pc+1)
 3630 pc=pc+2
 3640 ELSE
 3650 a$=adr$(k DIV 8,k MOD B,pc)
 3660 END IF
-3670 RETurn "MOVE" &$&", SR"
-36800: a$="NOT.B"
-3690 1:a$="NOT.W"
-3700 2:a$="NOT.L"
+3670 RETurn "MOVE    " &a$&",SR"
+3680 =0:a$="NOT.B"
+3690 =1:a$="NOT.W"
+3700 =2:a$="NOT.L"
 3710 END SELect
 3720 IF k>=58 THEN fault=1:RETurn ""
-3730 RETurn a$&"AAA"&adr$ (k DIV 8,k MOD 8,pc)
-3740 8: SELect ON j
-37500:IF k>=5B THEN fault=1:RETurn ""
-3760 RETurn "NBCDA"&adr$(k DIV 8,k MOD 8,pc)
-37701:IF k<B THEN RETurn "SWAPAAAAD &K
-3780 IF k=15 OR (k)=24 AND k<=39) THEN fault=1:RETurn ""
-3790 RETurn "PEA" &adr$ (k DIV 8,k MOD 8,pc)
-3800 2: SELect ON K
-38108 TO 7:RETurn "EXT. WAAAD"&k
-3820 32 TO 39:RETurn "MOVEM.WA."&regmaskpredec$(pc)&",-(A*&(k MOD 8)
-3830 16 TO 23,40 TO 57: RETurn "MOVEM.W."&regmaskpostinc$(pc)&","&ad r$(k DIV B,k MOD 8,pc)
-3840 REMAINDER: fault=1:RETurn ""
+3730 RETurn a$&"   "&adr$ (k DIV 8,k MOD 8,pc)
+3740 =8: SELect ON j
+3750 =0:IF k>=5B THEN fault=1:RETurn ""
+3760 RETurn "NBCD     "&adr$(k DIV 8,k MOD 8,pc)
+3770 =1:IF k<B THEN RETurn "SWAP    D"&K
+3780 IF k=15 OR (k>=24 AND k<=39) THEN fault=1:RETurn ""
+3790 RETurn "PEA     " &adr$ (k DIV 8,k MOD 8,pc)
+3800 =2: SELect ON K
+3810 =0 TO 7:RETurn "EXT. W   D"&k
+3820 =32 TO 39:RETurn "MOVEM.WA."&regmaskpredec$(pc)&",-(A"&(k MOD 8)&")"
+3830 =16 TO 23,40 TO 57: RETurn "MOVEM.W "&regmaskpostinc$(pc)&","&adr$(k DIV B,k MOD 8,pc)
+3840 =REMAINDER: fault=1:RETurn ""
 3850 END SELect
-3860 3: SELect ON K
-38700 TO 7:RETurn "EXT. LAAAD"&k
-3880 32 TO 39:RETurn "MOVEM.L."&regmaskpredec$(pc)&",-(A"&(k MOD 8) &")"
-3890 16 TO 23,40 TO 57:RETurn "MOVEM.L."&regmaskpostinc$(pc)&","&ad r$(k DIV 8,k MOD 8,pc)
-3900 REMAINDER :fault=1:RETurn ""
+3860 =3: SELect ON K
+3870 =0 TO 7:RETurn "EXT. L   D"&k
+3880 =32 TO 39:RETurn "MOVEM.L "&regmaskpredec$(pc)&",-(A"&(k MOD 8)&")"
+3890 =16 TO 23,40 TO 57:RETurn "MOVEM.L "&regmaskpostinc$(pc)&","&adr$(k DIV 8,k MOD 8,pc)
+3900 =REMAINDER :fault=1:RETurn ""
 3910 END SELect
 3920 END SELect
-3930 10: SELect ON j
-3940 0:a$="TST.B"
-3950 1:a$="TST.W"
-3960 2:a$="TST.L"
-3970 3:a$="TAS"
+3930 =10: SELect ON j
+3940 =0:a$="TST.B"
+3950 =1:a$="TST.W"
+3960 =2:a$="TST.L"
+3970 =3:a$="TAS  "
 3980 END SELect
 3990 IF k>=58 THEN fault=1:RETurn ""
-4000 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)
-4010 12: IF j<2 OR k<16 OR K DIV 8>4 THEN fault=1:RETurn""
+4000 RETurn a$&"   "&adr$(k DIV 8,k MOD 8,pc)
+4010 =12: IF j<2 OR k<16 OR K DIV 8=4 THEN fault=1:RETurn""
 4020 a$=regmaskpostinc$(pc)
 4030 IF j=2 THEN
-4040 b$="W"
+4040 b$="W "
 4050 ELSE
-4060 b$="L"
+4060 b$="L "
 4070 END IF
-4080 RETurn "MOVEM."&b$&adr$(k DIV 8,k MOD 8,pc)&", "&a$
-4090 14:RETurn dis4E$(pc,j,k)
+4080 RETurn "MOVEM."&b$&adr$(k DIV 8,k MOD 8,pc)&","&a$
+4090 =14:RETurn dis4E$(pc,j,k)
 4100 END SELect
 4110 END DEFine
+
 4120 DEFine FuNction regmaskpostinc$(pc)
 4130 LOCal a$, d$,i,j
 4140 a$=""
@@ -430,30 +431,32 @@
 4260 compress d$
 4270 RETurn combine$(d$,a$)
 4280 END DEFine
+
 4290 DEFine FuNction regmaskpredec$(pc)
 4300 LOCal a$,d$,i,j
 4310 d$=""
-4320 j=PEEK (pc)
+4320 j=PEEK(pc)
 4330 FOR i=0 TO 7
 4340 IF j*2^i DIV 128 MOD 2=1 THEN d$=d$&"D"&i
 4350 END FOR i
 4360 compress d$
 4370 a$=""
 4380 pc=pc+2
-4390 j=PEEK (pc-1)
+4390 j=PEEK(pc-1)
 4400 FOR i=0 TO 7
 4410 IF j*2^i DIV 128 MOD 2=1 THEN a$=a$&"A"&i
 4420 END FOR i
 4430 compress a$
 4440 RETurn combine$(d$,a$)
 4450 END DEFine
+
 4460 DEFine PROCedure compress (a$)
 4470 LOCal i,j
 4480 i=LEN(a$)
 4490 SELect ON i
 4500 =0 TO 2: RETurn
 4510 =4:a$=a$(1 TO 2)&"/"&a$(3 TO 4):RETurn
-4520 REMAINDER
+4520 =REMAINDER
 4530 FOR j=2 TO i-4 STEP 2
 4540 IF a$(j)+1=a$(j+2) THEN
 4550 IF a$(j)+2=a$(j+4) THEN a$(j+1)="-"
@@ -469,6 +472,7 @@
 4650 END REPeat juggle
 4660 END SELect
 4670 END DEFine
+
 4680 DEFine FuNction combine$(d$,a$)
 4690 IF d$="" THEN
 4700 IF a$="" THEN fault=1:RETurn ""
@@ -477,103 +481,111 @@
 4730 IF a$="" THEN RETurn d$
 4740 RETurn d$&"/"&a$
 4750 END DEFine
+
 4760 DEFine FuNction dis4E$(pc,j,k)
 4770 IF j=0 THEN fault=1: RETurn ""
 4780 IF j>1 THEN
 4790 IF k<=15 OR (k>=24 AND k<=39) THEN fault=1:RETurn ""
-4800 IF j=2 THEN RETurn "JSRAAAAA"&adr$(k DIV 8,k MOD 8,pc)
-4810 RETurn "JMPAAAAA"&adr$(k DIV 8,k MOD 8,pc)
+4800 IF j=2 THEN RETurn "JSR     "&adr$(k DIV 8,k MOD 8,pc)
+4810 RETurn "JMP     "&adr$(k DIV 8,k MOD 8,pc)
 4820 END IF
 4830 SELect ON k
-4840 0 TO 15: RETurn "TRAPAAAA#$"&hex$(k)
-4850 16 TO 23:pc=pc+2
-4860 RETurn "LINKA"&(K MOD 8)&",#$"&hexcon$(pc-2)&hexcon$(pc-1)
-4870 24 TO 31: RETurn "UNLKAA"&(K MOD 8)
-4880 32 TO 39: RETurn "MOVEAAAAA"&(k MOD 8)&", USP"
-4890 40 TO 47: RETurn "MOVE USP, A"&(K MOD 8)
-4900 48:RETurn "RESET"
-4910 49: RETurn "NOP"
-4920 50:pc=pc+2
-4930 RETurn "STOP&#$"&hexcon$(pc-2)&hexcon$(pc-1)
-4940 51: RETurn "RTE"
-4950 53: RETurn "RTS"
-4960 54: RETurn "TRAPV"
-4970 55: RETurn "RTR"
-4980 REMAINDER : fault=1:RETurn ""
+4840 =0 TO 15: RETurn "TRAP    #$"&hex$(k)
+4850 =16 TO 23:pc=pc+2
+4860 RETurn "LINK    A"&(K MOD 8)&",#$"&hexcon$(pc-2)&hexcon$(pc-1)
+4870 =24 TO 31: RETurn "UNLK    A"&(K MOD 8)
+4880 =32 TO 39: RETurn "MOVE    A"&(k MOD 8)&",USP"
+4890 =40 TO 47: RETurn "MOVE    USP,A"&(K MOD 8)
+4900 =48:RETurn "RESET"
+4910 =49: RETurn "NOP"
+4920 =50:pc=pc+2
+4930 RETurn "STOP    #$"&hexcon$(pc-2)&hexcon$(pc-1)
+4940 =51: RETurn "RTE"
+4950 =53: RETurn "RTS"
+4960 =54: RETurn "TRAPV"
+4970 =55: RETurn "RTR"
+4980 =REMAINDER : fault=1:RETurn ""
 4990 END SELect
 5000 END DEFine
+
 5010 DEFine FuNction dis7$(pc)
 5020 IF PEEK(pc)MOD 2=1 THEN fault=1: RETurn ""
 5030 pc=pc+2
-5040 RETurn "MOVER#$"&hexcon$(pc-1)&", D" & (PEEK (pc-2) DIV 2 MOD 8)
+5040 RETurn "MOVEQ   #$"&hexcon$(pc-1)&",D"&(PEEK (pc-2) DIV 2 MOD 8)
 5050 END DEFine
+
 5060 DEFine FuNction dis5$(pc)
 5070 LOCal i,j,as
-5080 i=PEEK (pc)MOD 16
+5080 i=PEEK(pc)MOD 16
 5090 j=PEEK(pc+1)
 5100 pc=pc+2
 5110 IF j<192 THEN
 5120 IF i MOD 2-0 THEN
-5130 a$="ADDO."
+5130 a$="ADDQ."
 5140 ELSE
 5150 a$="SUBQ."
 5160 END IF
 5170 IF MOD 64>=58 THEN fault=1:RETurn ""
-5180 IF 12 THEN i=16
+5180 IF i<2 THEN i=16
 5190 SELect ON j
-5200 8 TO 15:fault=1:RETurn ""
-5210 0 TO 63:a$=a$&"B"
-5220 64 TO 127:a$=a$&"W"
-5230 REMAINDER: a$=a$&"L"
+5200 =8 TO 15:fault=1:RETurn ""
+5210 =0 TO 63:a$=a$&"B"
+5220 =64 TO 127:a$=a$&"W"
+5230 =REMAINDER: a$=a$&"L"
 5240 END SELect
-5250 RETurn a$&#"&(i DIV 2)&","&adr$(j DIV 8 MOD 8,j MOD 8,pc)
+5250 RETurn a$&"  #"&(i DIV 2)&","&adr$(j DIV 8 MOD 8,j MOD 8,pc)
 5260 END IF
-5270 IF j DIV 8 MOD 8=1 THEN
+5270 IF j DIV 8 MOD 8<>1 THEN
 5280 IF j>=250 THEN fault=1:RETurn ""
-5290 RETurn "S"&con$(i)&""&adr$(j DIV 8 MOD 8,j MOD 8,pc)
+5290 RETurn "S"&con$(i)&"    D"&adr$(j DIV 8 MOD 8,j MOD 8,pc)
 5300 END IF
 5310 pc=pc+2
-5320 RETurn "DB" &con$(i)&"D"&(j MOD 8)&", $"&hexcon$(pc-2)&hexcon$(pc-1)&" (PC)=$"&hex5$(pc-2+256*PEEK (pc-2)-PEEK (pc-2) DIV 128*65536+PEEK(pc-1))
+5320 RETurn "DB"&con$(i)&"    D"&(j MOD 8)&",$"&hexcon$(pc-2)&hexcon$(pc-1)&"(PC)=$"&hex5$(pc-2+256*PEEK(pc-2)-PEEK(pc-2)DIV 128*65536+PEEK(pc-1))
 5330 END DEFine
+
 5340 DEFine FuNction dis6$(pc)
 5350 LOCal i,j,as
 5360 i=PEEK(pc)MOD 16
 5370 j=PEEK(pc+1)
 5380 pc=pc+2
 5390 a$=con$(i)
-5400 IF a$(2)="" THEN.
-5410 IF a$="TA" THEN
+5400 IF a$(2)=" " THEN
+5410 IF a$="T " THEN
 5420 a$="RA"
 5430 ELSE
 5440 a$="SR"
 5450 END IF
 5460 END IF
-5470 IF j<>0 THEN RETurn "B"&a$&".SA$"&hexcon$(pc-1)&" (PC)=$"&hex5$(pc+j-j DIV 128*256)
+5470 IF j<>0 THEN RETurn "B"&a$&".S   $"&hexcon$(pc-1)&"(PC)=$"&hex5$(pc+j-j DIV 128*256)
 5480 pc=pc+2
-5490 RETurn "B"&a$&"$"&hexcon$(pc-2)&hexcon$(pc-1)&" (PC)=$"&hex5$(pc-2+256*PEEK(pc-2)-PEEK(pc-2) DIV 128*65536+PEEK(pc-1))
+5490 RETurn "B"&a$&"     $"&hexcon$(pc-2)&hexcon$(pc-1)&"(PC)=$"&hex5$(pc-2+256*PEEK(pc-2)-PEEK(pc-2)DIV 128*65536+PEEK(pc-1))
 5500 END DEFine
+
 5510 DEFine FuNction con$(i)
 5520 SELect ON i
-5530 0:RETurn "Ta"
-5540 1:RETurn "FA"
-5550 2:RETurn "HI"
-5560 3:RETurn "LS"
-5570 4:RETurn "CC"
-5580 5:RETurn "CS"
-5590 6:RETurn "NE"
-5600 7:RETurn "EQ"
-5610 8:RETurn "VC"
-5620 9:RETurn "VS"
-5630 10:RETurn "PL"
-5640 11:RETurn "MI"
-5650 12:RETurn "GE"
-5660 13:RETurn "LT"
-5670 14:RETurn "GT"
-5680 15:RETurn "LE"
+5530 =0:RETurn "T "
+5540 =1:RETurn "F "
+5550 =2:RETurn "HI"
+5560 =3:RETurn "LS"
+5570 =4:RETurn "CC"
+5580 =5:RETurn "CS"
+5590 =6:RETurn "NE"
+5600 =7:RETurn "EQ"
+5610 =8:RETurn "VC"
+5620 =9:RETurn "VS"
+5630 =10:RETurn "PL"
+5640 =11:RETurn "MI"
+5650 =12:RETurn "GE"
+5660 =13:RETurn "LT"
+5670 =14:RETurn "GT"
+5680 =15:RETurn "LE"
 5690 END SELect
 5700 END DEFine
+
 5710 DEFine FuNction dis9$(pc):RETurn "SUB"&dis9orD$(pc):END DEFine
+
 5720 DEFine FuNction disD$(pc):RETurn "ADD"&dis9orD$(pc):END DEFine
+
 5730 DEFine FuNction dis9orD$(pc)
 5740 LOCal i,j,k,as
 5750 i=PEEK(pc)MOD 16
@@ -582,160 +594,163 @@
 5780 pc=pc+2
 5790 IF i MOD 2=0 THEN
 5800 SELect ON J
-5810 3: IF k=60 THEN
+5810 =3: IF k=60 THEN
 5820 pc=pc+2
-5830 RETurn ".W#$"&hexcon$(pc-2) &hexcon$ (pc-1)&", A"&(i DIV 2)
+5830 RETurn ".W   #$"&hexcon$(pc-2)&hexcon$ (pc-1)&",A"&(i DIV 2)
 5840 END IF
-5850 RETurn ".WAAA"&adr$(k DIV 8,k MOD 8,pc)&", A"&(i DIV 2)
-5860 0:a$=".B"
-5870 1:a$=".W"
-5880 2:a$=".L"
+5850 RETurn ".W   "&adr$(k DIV 8,k MOD 8,pc)&",A"&(i DIV 2)
+5860 =0:a$=".B"
+5870 =1:a$=".W"
+5880 =2:a$=".L"
 5890 END SELect
-5900 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)&", D"&(i DIV 2)
+5900 RETurn a$&"   "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
 5910 END IF
 5920 SELect ON j
-5930 3: IF k=60 THEN
+5930 =3: IF k=60 THEN
 5940 pc=pc+4
-5950 RETurn ".Laax#$"&hexcon$(pc-4)&hexcon$(pc-3)&hexcon$(pc-2) &hexc
-on$(pc-1)&", A" & (i DIV 2)
+5950 RETurn ".L   #$"&hexcon$(pc-4)&hexcon$(pc-3)&hexcon$(pc-2)&hexcon$(pc-1)&",A"&(i DIV 2)
 5960 END IF
-5970 RETurn "LA" &adr$(k DIV 8,k MOD 8,pc)&", A"&(i DIV 2)
-5980 0:a$=".B"
-5990 1:a$=".W"
-6000 2:a$=".L"
+5970 RETurn "L   " &adr$(k DIV 8,k MOD 8,pc)&",A"&(i DIV 2)
+5980 =0:a$=".B"
+5990 =1:a$=".W"
+6000 =2:a$=".L"
 6010 END SELect
 6020 IF k<8 THEN
-6030 RETurn "X"&a$&"D" &k&", D"&(i DIV 2)
+6030 RETurn "X"&a$&"  D" &k&",D"&(i DIV 2)
 6040 END IF
 6050 IF k<16 THEN
-6060 RETurn "X"&a$&"-(A&(k-8)&"),-(A&li DIV 2)&")"
+6060 RETurn "X"&a$&"  -(A"&(k-8)&"),-(A"&(i DIV 2)&")"
 6070 END IF
 6080 IF k>=58 THEN fault=1:RETurn ""
-6090 RETurn a$&"D" & (i DIV 2)&", "&adr$(k DIV 8,k MOD 8,pc)
+6090 RETurn a$&"   D" &(i DIV 2)&","&adr$(k DIV 8,k MOD 8,pc)
 6100 END DEFine
+
 6110 DEFine FuNction dis8$(pc)
 6120 LOCal i,j,k,a$
 6130 i=PEEK(pc)MOD 16
-6140 j=PEEK(pc+1) DIV 64
+6140 j=PEEK(pc+1)DIV 64
 6150 k=PEEK(pc+1)MOD 64
 6160 pc=pc+2
 6170 IF i MOD 2=0 THEN
 6180 IF k DIV 8=1 THEN fault=1:RETurn ""
 6190 SELect ON j
-6200 3:IF k=60 THEN
+6200 =3:IF k=60 THEN
 6210 pc=pc+2
-6220 RETurn "DIVU####"&hexcon$(pc-2)&hexcon$(pc-1)&", D"&(i DIV 2)
+6220 RETurn "DIVU    #$"&hexcon$(pc-2)&hexcon$(pc-1)&",D"&(i DIV 2)
 6230 END IF
-6240 RETurn "DIVU####"&adr$(k DIV 8,k MOD 8,pc)&", D"&(i DIV 2)
-6250 0:a$="OR.B"
-6260 1:a$="OR.W"
-6270 2:a$="OR.L"
+6240 RETurn "DIVU    "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
+6250 =0:a$="OR.B"
+6260 =1:a$="OR.W"
+6270 =2:a$="OR.L"
 6280 END SELect
-6290 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)&", D" & (i DIV 2)
+6290 RETurn a$&"    "&adr$(k DIV 8,k MOD 8,pc)&",D" & (i DIV 2)
 6300 END IF
 6310 SELect ON j
-6320 3:IF k=60 THEN
+6320 =3:IF k=60 THEN
 6330 pc=pc+2
-6340 RETurn "DIVS####"&hexcon$(pc-2)&hexcon$(pc-1)&", D" & (i DIV 2)
+6340 RETurn "DIVS    #$"&hexcon$(pc-2)&hexcon$(pc-1)&",D" & (i DIV 2)
 6350 END IF
-6360 IF k DIV 8=1 THEN fault=1:RETurn
-6370 RETurn "DIVS####"&adr$(k DIV 8,k MOD 8,pc)&", D"&(i DIV 2)
-6380 0:IF k<8 THEN
-6390 RETurn "SBCDAD" &k&", D" & (i DIV 2)
+6360 IF k DIV 8=1 THEN fault=1:RETurn ""
+6370 RETurn "DIVS    "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
+6380 =0:IF k<8 THEN
+6390 RETurn "SBCD    D"&k&",D"&(i DIV 2)
 6400 END IF
 6410 IF k<16 THEN
-6420 RETurn "SBCD####(A&(k-8)&"),-(A"&(i DIV 2)&")"
+6420 RETurn "SBCD    -(A"&(k-8)&"),-(A"&(i DIV 2)&")"
 6430 END IF
 6440 a$="DR.B"
-6450 1:a$="OR.W"
-6460 2:a$="DR.L"
+6450 =1:a$="OR.W"
+6460 =2:a$="DR.L"
 6470 END SELect
 6480 IF k<16 OR k>=58 THEN fault=1:RETurn ""
-6490 RETurn a$&" AD" & (i DIV 2)&", "&adr$(k DIV 8,k MOD 8,pc)
+6490 RETurn a$&"    D"&(i DIV 2)&","&adr$(k DIV 8,k MOD 8,pc)
 6500 END DEFine
+
 6510 DEFine FuNction disB$(pc)
 6520 LOCal i,j,k,a$
 6530 i=PEEK (pc)MOD 16
 6540 j=PEEK(pc+1)DIV 64
-6550 k=PEEK (pc+1) MOD 64
+6550 k=PEEK(pc+1)MOD 64
 6560 pc=pc+2
 6570 IF i MOD 2=0 THEN
 6580 SELECT ON j
-6590 3: IF k=60 THEN
+6590 =3: IF k=60 THEN
 6600 pc=pc+2
-6610 RETurn "CMP.WAAA#$"&hexcon$(pc-2)&hexcon$(pc-1)&", A"&(i DIV 2)
+6610 RETurn "CMP.W   #$"&hexcon$(pc-2)&hexcon$(pc-1)&",A"&(i DIV 2)
 6620 END IF
-6630 RETurn "CMP.WAAA"&adr$( k DIV 8,k MOD 8,pc)&", A" & (i DIV 2)
-6640 0: IF K DIV 8=1 THEN fault=1:RETurn **
+6630 RETurn "CMP.W   "&adr$( k DIV 8,k MOD 8,pc)&",A" & (i DIV 2)
+6640 =0: IF K DIV 8=1 THEN fault=1:RETurn **
 6650 a$="CMP.B"
-6660 1:a$="CMP.N"
-6670 2:a$="CMP.L"
+6660 =1:a$="CMP.N"
+6670 =2:a$="CMP.L"
 6680 END SELect
-6690 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)&", D"&(i DIV 2)
+6690 RETurn a$&"   "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
 6700 END IF
 6710 SELECT ON j
-6720 3: IF k=60 THEN
+6720 =3: IF k=60 THEN
 6730 pc=pc+4
-6740 RETurn "CMP.LA#$"&hexcon$(pc-4)&hexcon$(pc-3)&hexcon$(pc-2)&h excon$(pc-1)&", A"&(i DIV 2)
+6740 RETurn "CMP.L   #$"&hexcon$(pc-4)&hexcon$(pc-3)&hexcon$(pc-2)&hexcon$(pc-1)&",A"&(i DIV 2)
 6750 END IF
-6760 RETurn "CMP.LAAA"&adr$(k DIV 8,k MOD 8,pc)&", A"&(i DIV 2)
-6770 0:a$="B"
-6780 1:a$="W"
+6760 RETurn "CMP.L   "&adr$(k DIV 8,k MOD 8,pc)&",A"&(i DIV 2)
+6770 =0:a$="B"
+6780 =1:a$="W"
 6790 =2:a$="L"
 6800 END SELect
 6810 IF k>=58 THEN fault=1:RETurn ""
-6820 IF K DIV 8=1 THEN RETurn "CMPM. "&a$&" (A"&(k-8)&")+, (A"&(i DIV 2)&")+"
-6830 RETurn "EOR. "&a$&"D" & (i DIV 2)&", "&adr$(k DIV 8,k MOD 8,pc)
+6820 IF K DIV 8=1 THEN RETurn "CMPM."&a$&"  (A"&(k-8)&")+,(A"&(i DIV 2)&")+"
+6830 RETurn "EOR."&a$&"   D"&(i DIV 2)&","&adr$(k DIV 8,k MOD 8,pc)
 6840 END DEFine
+
 6850 DEFine FuNction disC$(pc)
 6860 LOCal i,j,k,at
-6870 i=PEEK (pc) MOD 16
+6870 i=PEEK (pc)MOD 16
 6880 j=PEEK(pc+1) DIV 64
 6890 k=PEEK (pc+1) MOD 64
 6900 pc=pc+2
 6910 IF I MOD 2=0 THEN
-6920 IF k DIV 8=1 THEN fault=1:RETurn "".
+6920 IF k DIV 8=1 THEN fault=1:RETurn ""
 6930 SELect ON j
-6940 3: IF k=60 THEN
+6940 =3: IF k=60 THEN
 6950 pc=pc+2
-6960 RETurn "MULU####"&hexcon$(pc-2)&hexcon$(pc-1)&", D" & (i DIV 2)
+6960 RETurn "MULU    #$"&hexcon$(pc-2)&hexcon$(pc-1)&",D"&(i DIV 2)
 6970 END IF
-6980 RETurn "MULU####"&adr$(k DIV 8,k MOD 8,pc)&", D"&(i DIV 2)
-6990 0: a$="AND.B"
-7000 1:a$="AND.W"
-7010 2:a$="AND.L"
+6980 RETurn "MULU    "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
+6990 =0: a$="AND.B"
+7000 =1:a$="AND.W"
+7010 =2:a$="AND.L"
 7020 END SELect
-7030 RETurn a$&""&adr$(k DIV 8,k MOD 8,pc)&", D1 DIV 2)
+7030 RETurn a$&"   "&adr$(k DIV 8,k MOD 8,pc)&",D"&(i DIV 2)
 7040 END IF
 7050 SELect ON j
-7060 0:IF k<8 THEN RETurn "ABCD####D" &k&", D"&(i DIV 2)
-7070 IF k<16 THEN RETurn "ABCD####(A*&(k-8)&"),-(A&(i DIV 2)&")"
-7080 a$-AND.B"
-7090 1:IF k<8 THEN RETurn "EXB####AD" & (i DIV 2)&", D"&k
-7100 IF k<16 THEN RETurn "EXG####A" & (i DIV 2)&", A"&(k-8)
+7060 =0:IF k<8 THEN RETurn "ABCD    D"&k&",D"&(i DIV 2)
+7070 IF k<16 THEN RETurn "ABCD    -(A*&(k-8)&"),-(A"&(i DIV 2)&")"
+7080 a$="AND.B"
+7090 =1:IF k<8 THEN RETurn "EXG     D"&(i DIV 2)&",D"&k
+7100 IF k<16 THEN RETurn "EXG     A"&(i DIV 2)&",A"&(k-8)
 7110 a$="AND.W"
-7120 2:IF k<8 THEN fault=1: RETurn ""
-7130 IF k<16 THEN RETurn "EXG####AD" & (i DIV 2)&", A"&(k-8)
+7120 =2:IF k<8 THEN fault=1: RETurn ""
+7130 IF k<16 THEN RETurn "EXG     D"&(i DIV 2)&",A"&(k-8)
 7140 a$="AND.L"
-7150 3: IF k=60 THEN
+7150 =3: IF k=60 THEN
 7160 pc=pc+2
-7170 RETurn "MULS####"&hexcon$(pc-2)&hexcon$(pc-1)&", D"&(i DIV 2)
+7170 RETurn "MULS    "&hexcon$(pc-2)&hexcon$(pc-1)&",D"&(i DIV 2)
 7180 END IF
-7190 IF K DIV 8=1 THEN fault=1:RETurn ""
-7200 RETurn "MULS####"&adr$(k DIV 8,k MOD 8,pc)&", D*&(i DIV 2)
+7190 IF k DIV 8=1 THEN fault=1:RETurn ""
+7200 RETurn "MULS    "&adr$(k DIV 8,k MOD 8,pc)&",D*&(i DIV 2)
 7210 END SELect
 7220 IF k>=58 THEN fault=1:RETurn ""
-7230 RETurn a$&"D" & (i DIV 2)&", "&adr$(k DIV 8,k MOD 8,pc)
+7230 RETurn a$&"   D" &(i DIV 2)&","&adr$(k DIV 8,k MOD 8,pc)
 7240 END DEFine
+
 7250 DEFine FuNction disE$(pc)
 7260 LOCal i,j,k,as
 7270 i=PEEK (pc) MOD 16
 7280 j=PEEK (pc+1)DIV 64
-7290 k=PEEK (pc+1) MOD 64
+7290 k=PEEK (pc+1)MOD 64
 7300 pc=pc+2
 7310 SELect ON j
-7320 3: IF k<16 OR k>=58 THEN fault=1:RETurn "".
-7330 RETurn shift$(".", i) &adr$(k DIV 8,k MOD 8,pc)
+7320 =3: IF k<16 OR k>=58 THEN fault=1:RETurn ""
+7330 RETurn shift$("  ", i) &adr$(k DIV 8,k MOD 8,pc)
 7340 =0:a$=".B"
 7350 =1:a$=".W"
 7360 =2:a$=".L"
@@ -743,21 +758,22 @@ on$(pc-1)&", A" & (i DIV 2)
 7380 j=k DIV 8 MOD 4*2+i MOD 2
 7390 IF k<32 THEN
 7400 IF i<2 THEN i=16
-7410 RETurn shift$(a$,j)&"#"&(i DIV 2)&", D"&(k MOD 8)
+7410 RETurn shift$(a$,j)&"#"&(i DIV 2)&",D"&(k MOD 8)
 7420 END IF
-7430 RETurn shift$(a$,j)&"D"&(i DIV 2)&", D"&(k MOD 8)
+7430 RETurn shift$(a$,j)&"D"&(i DIV 2)&",D"&(k MOD 8)
 7440 END DEFine
+
 7450 DEFine FuNction shift$(a$,n)
 7460 SELect ON n
-7470 =0:RETurn "ASR"&a$&""
-7480 =1:RETurn "ASL"&a$&""
-7490 =2:RETurn "LSR"&a$&""
-7500 =3:RETurn "LSL"&a$&""
-7510 =4:RETurn "ROXR"&a$&""
-7520 =5:RETurn "ROXL"&a$&""
-7530 =6:RETurn "ROR"&a$&""
-7540 =7:RETurn "ROL"&a$&""
-7550 REMAINDER :fault=1:RETurn ""
+7470 =0:RETurn "ASR"&a$&"   "
+7480 =1:RETurn "ASL"&a$&"   "
+7490 =2:RETurn "LSR"&a$&"   "
+7500 =3:RETurn "LSL"&a$&"   "
+7510 =4:RETurn "ROXR"&a$&"  "
+7520 =5:RETurn "ROXL"&a$&"  "
+7530 =6:RETurn "ROR"&a$&"   "
+7540 =7:RETurn "ROL"&a$&"   "
+7550 =REMAINDER :fault=1:RETurn ""
 7560 END SELect
 7570 END DEFine
-7580 REMark End of Disassembler.
+7580 REMark End of Disassembler
